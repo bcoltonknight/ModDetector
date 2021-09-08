@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from pymodbus.client.sync import ModbusTcpClient
 import ipaddress
 from pymodbus.exceptions import *
@@ -49,9 +51,8 @@ if __name__ == '__main__':
         print(f'Testing... {ip}', end="\r")
         try:
             client = ModbusTcpClient(ip)
-            print(f'{ip}: {client.read_holding_registers(1)}')
+            print(f'{ip}: {client.read_holding_registers(0)}')
             Endpoints.append(ip)
-
         except ConnectionException:
             continue
 
