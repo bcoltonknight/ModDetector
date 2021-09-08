@@ -49,7 +49,7 @@ if __name__ == '__main__':
         print(f'Testing... {ip}', end="\r")
         try:
             client = ModbusTcpClient(ip)
-            print(f'{ip}: {client.read_holding_registers(11)}')
+            print(f'{ip}: {client.read_holding_registers(1)}')
             Endpoints.append(ip)
 
         except ConnectionException:
