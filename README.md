@@ -5,4 +5,4 @@ Setup:
 ```pip install pymodbus```
 
 Syntax:
-python3 ```ModDetector.py [Subnet]```
+```python3 ModDetector.py [Subnet]```
