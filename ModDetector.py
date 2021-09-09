@@ -13,7 +13,7 @@ def attemptconnection(ip):
         print(f'{ip}: {response}')
         Endpoints.append(ip)
         client.close()
-        return
+        return response
     except ConnectionException:
         return
 
