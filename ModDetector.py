@@ -10,7 +10,7 @@ def attemptconnection(ip):
     try:
         client = ModbusTcpClient(ip)
         response = client.read_holding_registers(0, 1)
-        print(f'\n{ip}: {response.registers}')
+        print(f'\r{ip}: {response.registers}     ')
         Endpoints.append(ip)
         return response
     except ConnectionException:
