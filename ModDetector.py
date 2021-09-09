@@ -6,6 +6,18 @@ from pymodbus.exceptions import *
 import sys
 
 
+def attemptconnection(ip):
+    try:
+        client = ModbusTcpClient(ip)
+        response = client.read_holding_registers(0, 1)
+        print(f'{ip}: {response}')
+        Endpoints.append(ip)
+        client.close()
+        return
+    except ConnectionException:
+        return
+
+
 if __name__ == '__main__':
     Endpoints = []
     IPs = []
@@ -47,14 +59,12 @@ if __name__ == '__main__':
     print('Beginning Scan...')
 
     # Iterate over IPs in the subnet, and print ones with valid responses
+
     for ip in IPs:
-        print(f'Testing... {ip}', end="\r")
         try:
-            client = ModbusTcpClient(ip)
-            print(f'{ip}: {client.read_holding_registers(0)}')
-            Endpoints.append(ip)
-        except ConnectionException:
-            continue
+            print(f'Testing... {ip}', end="\r")
+            attemptconnection(ip)
+
 
         except KeyboardInterrupt:
             break
