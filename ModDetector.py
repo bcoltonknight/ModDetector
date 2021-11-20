@@ -3,18 +3,56 @@
 from pymodbus.client.sync import ModbusTcpClient
 import ipaddress
 from pymodbus.exceptions import *
+from pymodbus import mei_message
 import sys
+import threading
+
+def checkgateway(ip):
+    valid = False
+    highestTested = 0
+    # Check two lowest and most common unit numbers
+    for unit in [0, 1]:
+        if attemptconnection(ip, unit):
+            valid = True
+            highestTested = unit
+            break
+
+    if not valid:
+        return False
+
+    Endpoints.append(ip)
+
+    for unit in range(highestTested + 1, 256):
+        attemptconnection(ip, unit)
 
 
-def attemptconnection(ip):
+def attemptconnection(ip, unit):
     try:
         client = ModbusTcpClient(ip)
-        response = client.read_holding_registers(0, 1)
-        print(f'\r{ip}: {response.registers}     ')
-        Endpoints.append(ip)
-        return response
+        response = client.read_holding_registers(0, 1, unit=unit)
+        rq = mei_message.ReadDeviceInformationRequest(unit=unit, read_code=0x03)
+        devInfo = client.execute(rq)
+        if 'information' in vars(devInfo).keys():
+            try:
+                print(f'{ip} unit {unit} device information: {" ".join([x.decode() for x in devInfo.information.values()])}')
+            except UnicodeDecodeError:
+                print(f'{ip} unit {unit}: Device Information Retrieved But unable to be decoded. Printing in Sequence and removing'
+                      f' invalid entries...')
+                for i in devInfo.information.values():
+                    try:
+                        print(i.decode())
+                    except UnicodeDecodeError:
+                        pass
+        else:
+            if 'registers' in vars(response).keys():
+                print(f'\r{ip} unit {unit} register 0: {response.registers}     ')
+            else:
+                return False
+                #print(f'\r{ip}: Error. Unable to read holding registers')
+
+        return True
     except ConnectionException:
-        return
+        return False
 
 
 if __name__ == '__main__':
@@ -58,18 +96,24 @@ if __name__ == '__main__':
     print('Beginning Scan...')
 
     # Iterate over IPs in the subnet, and print ones with valid responses
-
     for ip in IPs:
+        # Scuffed implementation of limiting running threads
+        while threading.activeCount() >= 5:
+            pass
+
         try:
             print(f'Testing... {ip}', end="\r")
-            attemptconnection(ip)
-
+            threading.Thread(target=checkgateway, args=(ip,)).start()
 
         except KeyboardInterrupt:
             break
 
+
+    while threading.activeCount() > 1:
+        pass
     # Print Valid endpoints found
     print(f'\n\nScan Complete. {len(Endpoints)} Found')
 
     for i in Endpoints:
         print(i)
+
