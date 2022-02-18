@@ -21,9 +21,9 @@ def checkgateway(ip):
         return False
 
     Endpoints.append(ip)
-
-    for unit in range(highestTested + 1, 256):
-        attemptconnection(ip, unit)
+    
+    #for unit in range(highestTested + 1, 256):
+    #    attemptconnection(ip, unit)
 
 
 def attemptconnection(ip, unit):
