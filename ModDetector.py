@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from pymodbus.client.sync import ModbusTcpClient
+from pymodbus.client import ModbusTcpClient
 import ipaddress
 from pymodbus.exceptions import *
 from pymodbus import mei_message
@@ -21,7 +21,7 @@ def checkgateway(ip):
         return False
 
     Endpoints.append(ip)
-    
+
     #for unit in range(highestTested + 1, 256):
     #    attemptconnection(ip, unit)
 
@@ -29,7 +29,7 @@ def checkgateway(ip):
 def attemptconnection(ip, unit):
     try:
         client = ModbusTcpClient(ip)
-        response = client.read_holding_registers(0, 1, unit=unit)
+        response = client.read_holding_registers(0, 1, slave=unit)
         rq = mei_message.ReadDeviceInformationRequest(unit=unit, read_code=0x03)
         devInfo = client.execute(rq)
         if 'information' in vars(devInfo).keys():
@@ -61,13 +61,13 @@ if __name__ == '__main__':
     Subnet = ''
 
     print('''-------------------------------------------------------------------------------
- #     #               ######                                                 
- ##   ##  ####  #####  #     # ###### ##### ######  ####  #####  ####  #####  
- # # # # #    # #    # #     # #        #   #      #    #   #   #    # #    # 
- #  #  # #    # #    # #     # #####    #   #####  #        #   #    # #    # 
- #     # #    # #    # #     # #        #   #      #        #   #    # #####  
- #     # #    # #    # #     # #        #   #      #    #   #   #    # #   #  
- #     #  ####  #####  ######  ######   #   ######  ####    #    ####  #    # 
+ #     #               ######
+ ##   ##  ####  #####  #     # ###### ##### ######  ####  #####  ####  #####
+ # # # # #    # #    # #     # #        #   #      #    #   #   #    # #    #
+ #  #  # #    # #    # #     # #####    #   #####  #        #   #    # #    #
+ #     # #    # #    # #     # #        #   #      #        #   #    # #####
+ #     # #    # #    # #     # #        #   #      #    #   #   #    # #   #
+ #     #  ####  #####  ######  ######   #   ######  ####    #    ####  #    #
 -------------------------------------------------------------------------------''')
 
     # Check valid number of arguments
@@ -98,7 +98,7 @@ if __name__ == '__main__':
     # Iterate over IPs in the subnet, and print ones with valid responses
     for ip in IPs:
         # Scuffed implementation of limiting running threads
-        while threading.activeCount() >= 5:
+        while threading.activeCount() >= 15:
             pass
 
         try:
@@ -116,4 +116,3 @@ if __name__ == '__main__':
 
     for i in Endpoints:
         print(i)
-
